@@ -60,7 +60,7 @@ if st.button("Rüyamı Yorumla"):
         try:
             # LİSTEDE GÖRDÜĞÜMÜZ MODELİ KULLANIYORUZ:
             model = genai.GenerativeModel(
-               model_name="gemini-1.5-flash",
+               model_name="gemini-flash-latest",
                 system_instruction=system_instruction
             )
             
@@ -72,4 +72,5 @@ if st.button("Rüyamı Yorumla"):
             
         except Exception as e:
             st.error(f"Bir hata oluştu: {e}")
+
 
