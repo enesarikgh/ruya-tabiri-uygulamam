@@ -2,36 +2,73 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-st.title("🔍 Model Dedektifi")
+# --- SAYFA AYARLARI ---
+st.set_page_config(
+    page_title="İslami Rüya Tabiri ve Rehberi",
+    page_icon="🌙",
+    layout="centered"
+)
 
-# 1. Kütüphane Versiyonunu Göster
+# --- GİZLİ ANAHTARI ALMA ---
 try:
-    st.write(f"📦 Yüklü Kütüphane Versiyonu: **{genai.__version__}**")
-except:
-    st.error("Kütüphane versiyonu okunamadı.")
-
-# 2. Modelleri Listele
-st.write("📋 **Sunucuda Kullanılabilir Modeller:**")
-
-try:
-    # Anahtarı çek
+    # Senin 'Secrets' kısmına kaydettiğin şifreyi çeker
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
-    
-    # Modelleri listele
-    models = list(genai.list_models())
-    
-    found_any = False
-    for m in models:
-        # Sadece generateContent destekleyenleri gösterelim
-        if 'generateContent' in m.supported_generation_methods:
-            st.code(m.name) # Model ismini ekrana bas
-            found_any = True
+except Exception:
+    st.error("Sistem hatası: API Anahtarı bulunamadı. Lütfen site sahibiyle iletişime geçin.")
+    st.stop()
+
+# --- KENAR ÇUBUĞU ---
+with st.sidebar:
+    st.header("🌙 Hakkımızda")
+    st.info("Bu yapay zeka asistanı, İslami kaynakları tarayarak rüyalarınızı analiz eder.")
+    st.markdown("---")
+    st.markdown("""
+    ### 📌 Bilmeniz Gerekenler
+    * **Rahmani Rüya:** Müjdedir, anlatılır.
+    * **Şeytani Rüya:** Korkutucudur, anlatılmaz.
+    * **Nefsani Rüya:** Bilinçaltıdır, yorumlanmaz.
+    """)
+
+# --- ANA EKRAN ---
+st.title("🌙 İslami Rüya Rehberi")
+st.write("Rüyanızı aşağıya yazın, Rahmani mi yoksa Şeytani mi olduğunu ve manasını öğrenin.")
+
+# --- YAPAY ZEKA TALİMATI ---
+system_instruction = """
+GÖREVİN:
+Sen İslami hassasiyetlere sahip, güvenilir bir Rüya Rehberi ve Eğitmenisin.
+
+KURALLAR:
+1. RAHMANİ (SADIK) RÜYALAR: Allah'tan gelen müjdelerdir. Hayra yor, sembolleri açıkla, ümit ver.
+2. ŞEYTANİ VE KORKUNÇ RÜYALAR: ASLA YORUMLAMA. Kullanıcıya "Bu rüya şeytani veya psikolojik kökenli görünüyor. Peygamber Efendimiz'in tavsiyesi üzerine bu tür rüyalar anlatılmaz ve yorumlanmaz. Allah'a sığın ve unut" de.
+3. NEFSANİ (BİLİNÇALTI): Günlük olayların yansımasıdır. Yorumlanmaz.
+
+ÜSLUP:
+- Besmele veya selam ile başla.
+- Asla kesin konuşma, "Allah en doğrusunu bilir" de.
+- Nazik, eğitici ve ferahlatıcı ol.
+"""
+
+# --- KULLANICI GİRİŞİ ---
+user_dream = st.text_area("Rüyanızı buraya yazın:", height=150, placeholder="Örn: Rüyamda temiz bir suda yüzdüğümü gördüm...")
+
+if st.button("Rüyamı Yorumla"):
+    if not user_dream:
+        st.warning("Lütfen boş bırakmayınız, rüyanızı yazınız.")
+    else:
+        try:
+            # LİSTEDE GÖRDÜĞÜMÜZ MODELİ KULLANIYORUZ:
+            model = genai.GenerativeModel(
+                model_name="gemini-2.0-flash",
+                system_instruction=system_instruction
+            )
             
-    if not found_any:
-        st.warning("Hiçbir metin modeli bulunamadı. API Anahtarınız kısıtlı olabilir.")
-
-except Exception as e:
-    st.error(f"HATA OLUŞTU: {e}")
-    st.info("Lütfen API Anahtarınızın 'Secrets' kısmında doğru kayıtlı olduğundan emin olun.")
-
+            with st.spinner("Rüyanız İslami kaynaklara göre taranıyor..."):
+                response = model.generate_content(user_dream)
+                
+            st.success("Yorum Hazır:")
+            st.markdown(response.text)
+            
+        except Exception as e:
+            st.error(f"Bir hata oluştu: {e}")
