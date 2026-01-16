@@ -56,7 +56,7 @@ if st.button("Rüyamı Yorumla"):
             # Yapay Zeka Ayarları
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
+                model_name="gemini-pro",
                 system_instruction=system_instruction
             )
             
@@ -73,4 +73,5 @@ if st.button("Rüyamı Yorumla"):
 
 # --- ALT BİLGİ ---
 st.markdown("---")
+
 st.caption("⚠️ Uyarı: Bu sistem yapay zeka desteklidir. Rüyalar gaybın kesin habercisi değildir. En doğrusunu Allah bilir.")
